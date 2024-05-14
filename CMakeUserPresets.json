@@ -1,0 +1,63 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "x64-Debug",
+      "inherits": "Qt-Default",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "-DQT_QML_DEBUG",
+        "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "lib",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_INSTALL_PACKAGE_DIRECTORY": "${sourceDir}/out/package"
+      }
+    },
+    {
+      "name": "x64-Release",
+      "inherits": "Qt-Default",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "lib",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_INSTALL_PACKAGE_DIRECTORY": "${sourceDir}/out/package"
+      }
+    },
+    {
+      "hidden": true,
+      "name": "Qt-Default",
+      "inherits": "QT6.5.1",
+      "vendor": {
+        "qt-project.org/Default": {
+          "checksum": "ydxqRIwQTKOy3oeca+u3T/01Ec8="
+        }
+      }
+    },
+    {
+      "hidden": true,
+      "name": "QT6.5.1",
+      "inherits": "Qt",
+      "environment": {
+        "QTDIR": "C:/QT/6.5.1/MSVC2019_64"
+      },
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      },
+      "generator": "Ninja",
+      "vendor": {
+        "qt-project.org/Version": {
+          "checksum": "obdJgVLNNOfs+sETjV2cDqhi83U="
+        }
+      }
+    }
+  ],
+  "vendor": {
+    "qt-project.org/Presets": {
+      "checksum": "9svXI8JQydTW4ccfbmP+imnQ19E="
+    }
+  }
+}

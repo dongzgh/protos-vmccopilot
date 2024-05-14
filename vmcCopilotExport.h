@@ -1,0 +1,11 @@
+#pragma once
+
+#ifndef BUILD_STATIC
+#if defined(VMCCOPILOT_DLL_LIB)
+#define VMCCOPILOT_DLL_EXPORT Q_DECL_EXPORT
+#else
+#define VMCCOPILOT_DLL_EXPORT Q_DECL_IMPORT
+#endif
+#else
+#define VMCCOPILOT_DLL_EXPORT
+#endif
