@@ -15,7 +15,7 @@ vmcCopilot::vmcCopilot(QWidget *parent) :
 
   m_networkManager = std::make_unique<vmcCopilotNetwork>(this);
 
-  connect(m_ui->lineEditInput, &QLineEdit::returnPressed, this, &vmcCopilot::sendRequest);
+  connect(m_ui->leInput, &QLineEdit::returnPressed, this, &vmcCopilot::sendRequest);
   connect(m_networkManager.get(), &vmcCopilotNetwork::responseReceived, this, &vmcCopilot::responseReceived);
 }
 
@@ -25,7 +25,7 @@ vmcCopilot::~vmcCopilot()
 
 void vmcCopilot::sendRequest()
 {
-  QString question = m_ui->lineEditInput->text();
+  QString question = m_ui->leInput->text();
   m_networkManager->sendRequest(m_url, m_key, question);
 }
 
@@ -36,5 +36,8 @@ void vmcCopilot::responseReceived(const QString& response)
   QJsonArray answersArray = jsonObj["answers"].toArray();
   QJsonObject answerObj = answersArray[0].toObject();
   QString answer = answerObj["answer"].toString();
-  m_ui->textBrowserOutput->setMarkdown(answer);
+  QTextDocument textDoc;
+  textDoc.setMarkdown(answer);
+  answer = textDoc.toHtml();
+  m_ui->wvOutput->setHtml(answer);
 }

@@ -128,32 +128,18 @@ QScrollBar::sub-line {
       <number>5</number>
      </property>
      <item>
-      <widget class="QLabel" name="labelHello">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>What can I help you?</string>
-       </property>
-       <property name="indent">
-        <number>0</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditInput">
+      <widget class="QLineEdit" name="leInput">
        <property name="toolTip">
         <string>Enter your questions here</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QTextBrowser" name="textBrowserOutput">
-       <property name="toolTip">
-        <string>Here is the answer to your question</string>
+      <widget class="QWebEngineView" name="wvOutput">
+       <property name="url">
+        <url>
+         <string>about:blank</string>
+        </url>
        </property>
       </widget>
      </item>
@@ -161,6 +147,13 @@ QScrollBar::sub-line {
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebEngineView</class>
+   <extends>QWidget</extends>
+   <header location="global">QtWebEngineWidgets/QWebEngineView</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

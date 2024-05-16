@@ -11,8 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-find_package(Qt6 COMPONENTS Widgets Network REQUIRED)
-find_package(OpenSSL REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Network WebEngineWidgets REQUIRED)
 
 # Define target
 # - Set header/source/ui files.
@@ -28,7 +27,7 @@ add_library(vmcCopilot SHARED
 
 # - Build target.
 target_compile_definitions(vmcCopilot PRIVATE VMCCOPILOT_DLL_LIB)
-target_link_libraries(vmcCopilot PRIVATE Qt6::Widgets Qt6::Network)
+target_link_libraries(vmcCopilot PRIVATE Qt6::Widgets Qt6::Network Qt6::WebEngineWidgets)
 
 # Define installation settings.
 # - Configure nuget package specification.
