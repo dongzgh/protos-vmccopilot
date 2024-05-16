@@ -10,8 +10,8 @@
         "CMAKE_CXX_FLAGS": "-DQT_QML_DEBUG",
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "lib",
         "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-        "CMAKE_INSTALL_PACKAGE_DIRECTORY": "${sourceDir}/out/package"
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install",
+        "CMAKE_INSTALL_PACKAGE_DIRECTORY": "${sourceDir}/out"
       }
     },
     {
@@ -19,11 +19,11 @@
       "inherits": "Qt-Default",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "lib",
         "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-        "CMAKE_INSTALL_PACKAGE_DIRECTORY": "${sourceDir}/out/package"
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install",
+        "CMAKE_INSTALL_PACKAGE_DIRECTORY": "${sourceDir}/out"
       }
     },
     {
@@ -57,7 +57,7 @@
   ],
   "vendor": {
     "qt-project.org/Presets": {
-      "checksum": "9svXI8JQydTW4ccfbmP+imnQ19E="
+      "checksum": "LV1nYhPJlWNt28vKDXnR5qIBceY="
     }
   }
 }

@@ -11,7 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Network REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 # Define target
 # - Set header/source/ui files.
@@ -27,14 +28,12 @@ add_library(vmcCopilot SHARED
 
 # - Build target.
 target_compile_definitions(vmcCopilot PRIVATE VMCCOPILOT_DLL_LIB)
-target_link_libraries(vmcCopilot PRIVATE Qt6::Widgets)
-
-# Configure nuget package specification.
-# MESSAGE CURRETN BUILD TYPE.
-message(STATUS "Current build type: ${CMAKE_BUILD_TYPE}")
-configure_file(VMCCopilot.nuspec.in VMCCopilot.nuspec)
+target_link_libraries(vmcCopilot PRIVATE Qt6::Widgets Qt6::Network)
 
 # Define installation settings.
+# - Configure nuget package specification.
+configure_file(VMCCopilot.nuspec.in VMCCopilot.nuspec)
+
 # - Set header files.
 set_target_properties(vmcCopilot PROPERTIES
 	PUBLIC_HEADER "${HEADERS}"
@@ -42,16 +41,28 @@ set_target_properties(vmcCopilot PROPERTIES
 
 # - Install target.
 install(TARGETS vmcCopilot
-	RUNTIME DESTINATION lib
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION "lib/${CMAKE_BUILD_TYPE}"
+	LIBRARY DESTINATION "lib/${CMAKE_BUILD_TYPE}"
+	ARCHIVE DESTINATION "lib/${CMAKE_BUILD_TYPE}"
 	PUBLIC_HEADER DESTINATION include
 	RESOURCE DESTINATION resources
 )
 
-# - Install additional files.
+# - Install pdb files.
 install(FILES 
-	${CMAKE_SOURCE_DIR}/README.md
+	$<TARGET_PDB_FILE:vmcCopilot>
+	DESTINATION "lib/${CMAKE_BUILD_TYPE}"
+)
+
+# - Install msbuild files.
+install(FILES 
+	${CMAKE_CURRENT_SOURCE_DIR}/build/VMC.Copilot.props
+	${CMAKE_CURRENT_SOURCE_DIR}/build/VMC.Copilot.targets
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/build
+)
+
+# - Install nuspec files.
+install(FILES 
 	${CMAKE_CURRENT_BINARY_DIR}/VMCCopilot.nuspec
 	DESTINATION ${CMAKE_INSTALL_PREFIX}
 )

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <PropertyGroup>
+    <VMCCopilotTargetFolder Condition="'$(VMCCopilotTargetFolder)'==''">$(OutDir)</VMCCopilotTargetFolder>
+    <PotentialConfiguration Condition="$(Configuration.ToLower().Contains('release'))">RelWithDebInfo</PotentialConfiguration>
+    <PotentialConfiguration Condition="$(Configuration.ToLower().Contains('debug'))">Debug</PotentialConfiguration>
+    <VMCCopilotConfiguration Condition="'$(VMCCopilotConfiguration)'==''">$(PotentialConfiguration)</VMCCopilotConfiguration>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <VMCCopilot_binaries Include="$(MSBuildThisFileDirectory)..\lib\$(VMCCopilotConfiguration)\vmcCopilot.dll" />
+  </ItemGroup>
+  
+  <Target Name="DeployVMCCopilot" BeforeTargets="Build">
+    <Copy
+       SourceFiles="%(VMCCopilot_binaries.Identity)"
+       DestinationFiles="@(VMCCopilot_binaries->'$(VMCCopilotTargetFolder)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <Target Name="CleanVMCCopilot" BeforeTargets="Clean">
+    <Delete
+       Files="@(VMCCopilot_binaries->'$(VMCCopilotTargetFolder)\%(RecursiveDir)%(Filename)%(Extension)')"
+       TreatErrorsAsWarnings="true" />
+  </Target>
+  
+</Project>

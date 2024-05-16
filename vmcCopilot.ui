@@ -151,7 +151,7 @@ QScrollBar::sub-line {
       </widget>
      </item>
      <item>
-      <widget class="QTextBrowser" name="textBrowserResponse">
+      <widget class="QTextBrowser" name="textBrowserOutput">
        <property name="toolTip">
         <string>Here is the answer to your question</string>
        </property>
