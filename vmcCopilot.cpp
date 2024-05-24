@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDebug>
 
 vmcCopilot::vmcCopilot(QWidget *parent) :
     QDialog(parent),
@@ -16,7 +17,8 @@ vmcCopilot::vmcCopilot(QWidget *parent) :
   m_networkManager = std::make_unique<vmcCopilotNetwork>(this);
 
   connect(m_ui->leInput, &QLineEdit::returnPressed, this, &vmcCopilot::sendRequest);
-  connect(m_networkManager.get(), &vmcCopilotNetwork::responseReceived, this, &vmcCopilot::responseReceived);
+  connect(m_networkManager.get(), &vmcCopilotNetwork::responseReceived, this, &vmcCopilot::slot_ResponseReceived);
+  connect(m_ui->wvOutput->page(), &QWebEnginePage::navigationRequested, this, &vmcCopilot::slot_NavigationRequested);
 }
 
 vmcCopilot::~vmcCopilot()
@@ -29,7 +31,7 @@ void vmcCopilot::sendRequest()
   m_networkManager->sendRequest(m_url, m_key, question);
 }
 
-void vmcCopilot::responseReceived(const QString& response)
+void vmcCopilot::slot_ResponseReceived(const QString& response)
 {
   QJsonDocument jsonDoc = QJsonDocument::fromJson(response.toUtf8());
   QJsonObject jsonObj = jsonDoc.object();
@@ -40,4 +42,29 @@ void vmcCopilot::responseReceived(const QString& response)
   textDoc.setMarkdown(answer);
   answer = textDoc.toHtml();
   m_ui->wvOutput->setHtml(answer);
+}
+
+void vmcCopilot::slot_NavigationRequested(QWebEngineNavigationRequest& request)
+{
+  qDebug() << request.url().toString();
+
+  // Accept conventional navigation requests.
+  if (request.url().toString().contains("data:text/html") ||
+    request.url().toString().contains("http://") ||
+    request.url().toString().contains("https://")) {
+    request.accept();
+    return;
+  } // Accept data:ui and data:code navigation requests.
+  else if(request.url().toString().contains("data:ui") ||
+    request.url().toString().contains("data:code"))
+  {
+    request.reject();
+    emit signal_navigationRequested(request);
+    return;
+  } // Reject all other requests.
+  else
+  {
+    request.reject();
+    return;
+  }
 }

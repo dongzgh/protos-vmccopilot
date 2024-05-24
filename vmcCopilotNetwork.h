@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QObject>
 #include <QNetworkAccessManager>
+#include <QObject>
 
 class vmcCopilotNetwork : public QObject {
   Q_OBJECT

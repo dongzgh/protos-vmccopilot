@@ -1,10 +1,10 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QObject>
-#include <QUrl>
-#include <QDebug>
 #include <QJsonDocument>
+#include <QUrl>
+#include <QObject>
+#include <QDebug>
 
 #include "vmcCopilotNetwork.h"
 

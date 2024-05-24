@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <QDialog>
+#include <QWebEngineNavigationRequest>
 
 #include "vmcCopilotNetwork.h"
 #include "vmcCopilotExport.h"
@@ -20,7 +21,13 @@ public:
   void setUrl(const QString& url) { m_url = url; };
   void setKey(const QString& key) { m_key = key; };
   void sendRequest();
-  void responseReceived(const QString& response);
+
+signals:
+  void signal_navigationRequested(QWebEngineNavigationRequest& request);
+
+protected slots:
+  void slot_ResponseReceived(const QString& response);
+  void slot_NavigationRequested(QWebEngineNavigationRequest& request);;
 
 private:
   QString m_url;
