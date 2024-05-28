@@ -11,7 +11,7 @@
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "lib",
         "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install",
-        "CMAKE_INSTALL_PACKAGE_DIRECTORY": "${sourceDir}/out"
+        "CMAKE_INSTALL_PACKAGE_DIRECTORY": "${sourceDir}/out/packages"
       }
     },
     {
@@ -23,7 +23,7 @@
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "lib",
         "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install",
-        "CMAKE_INSTALL_PACKAGE_DIRECTORY": "${sourceDir}/out"
+        "CMAKE_INSTALL_PACKAGE_DIRECTORY": "${sourceDir}/out/packages"
       }
     },
     {
@@ -75,7 +75,7 @@
   ],
   "vendor": {
     "qt-project.org/Presets": {
-      "checksum": "T5e2lxz6d4UetpogBgrB7h+0A4U="
+      "checksum": "lZwkzaZrSXWgRYg1hHp8yVYLJI0="
     }
   }
 }

@@ -12,7 +12,7 @@ vmcCopilotNetwork::vmcCopilotNetwork(QObject* parent) :
   QObject(parent)
 {
   m_manager = std::make_unique<QNetworkAccessManager>(this);
-  connect(m_manager.get(), &QNetworkAccessManager::finished, this, &vmcCopilotNetwork::replyFinished);
+  connect(m_manager.get(), &QNetworkAccessManager::finished, this, &vmcCopilotNetwork::slot_replyFinished);
 }
 
 void vmcCopilotNetwork::sendRequest(const QString& url, const QString& key, const QString& question) 
@@ -36,7 +36,7 @@ void vmcCopilotNetwork::sendRequest(const QString& url, const QString& key, cons
   m_manager->post(request, postData);
 }
 
-void vmcCopilotNetwork::replyFinished(QNetworkReply* reply) 
+void vmcCopilotNetwork::slot_replyFinished(QNetworkReply* reply) 
 {
   QString response;
 
@@ -48,5 +48,5 @@ void vmcCopilotNetwork::replyFinished(QNetworkReply* reply)
   }
 
   reply->deleteLater();
-  emit responseReceived(response);  
+  emit signal_responseReceived(response);
 }

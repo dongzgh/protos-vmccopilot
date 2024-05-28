@@ -11,10 +11,10 @@ public:
   void sendRequest(const QString& url, const QString& key, const QString& question);
 
 signals:
-  void responseReceived(const QString& response);
+  void signal_responseReceived(const QString& response);
 
 private slots:
-  void replyFinished(QNetworkReply* reply);
+  void slot_replyFinished(QNetworkReply* reply);
 
 private:
   std::unique_ptr<QNetworkAccessManager> m_manager;

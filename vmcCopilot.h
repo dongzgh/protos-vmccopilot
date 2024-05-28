@@ -26,8 +26,8 @@ signals:
   void signal_navigationRequested(QWebEngineNavigationRequest& request);
 
 protected slots:
-  void slot_ResponseReceived(const QString& response);
-  void slot_NavigationRequested(QWebEngineNavigationRequest& request);;
+  void slot_responseReceived(const QString& response);
+  void slot_navigationRequested(QWebEngineNavigationRequest& request);;
 
 private:
   QString m_url;

@@ -17,8 +17,8 @@ vmcCopilot::vmcCopilot(QWidget *parent) :
   m_networkManager = std::make_unique<vmcCopilotNetwork>(this);
 
   connect(m_ui->leInput, &QLineEdit::returnPressed, this, &vmcCopilot::sendRequest);
-  connect(m_networkManager.get(), &vmcCopilotNetwork::responseReceived, this, &vmcCopilot::slot_ResponseReceived);
-  connect(m_ui->wvOutput->page(), &QWebEnginePage::navigationRequested, this, &vmcCopilot::slot_NavigationRequested);
+  connect(m_networkManager.get(), &vmcCopilotNetwork::signal_responseReceived, this, &vmcCopilot::slot_responseReceived);
+  connect(m_ui->wvOutput->page(), &QWebEnginePage::navigationRequested, this, &vmcCopilot::slot_navigationRequested);
 }
 
 vmcCopilot::~vmcCopilot()
@@ -31,7 +31,7 @@ void vmcCopilot::sendRequest()
   m_networkManager->sendRequest(m_url, m_key, question);
 }
 
-void vmcCopilot::slot_ResponseReceived(const QString& response)
+void vmcCopilot::slot_responseReceived(const QString& response)
 {
   QJsonDocument jsonDoc = QJsonDocument::fromJson(response.toUtf8());
   QJsonObject jsonObj = jsonDoc.object();
@@ -44,7 +44,7 @@ void vmcCopilot::slot_ResponseReceived(const QString& response)
   m_ui->wvOutput->setHtml(answer);
 }
 
-void vmcCopilot::slot_NavigationRequested(QWebEngineNavigationRequest& request)
+void vmcCopilot::slot_navigationRequested(QWebEngineNavigationRequest& request)
 {
   qDebug() << request.url().toString();
 
