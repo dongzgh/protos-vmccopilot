@@ -6,6 +6,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QDebug>
 
 vmcCopilot::vmcCopilot(QWidget *parent) :
@@ -38,9 +40,10 @@ void vmcCopilot::slot_responseReceived(const QString& response)
   QJsonArray answersArray = jsonObj["answers"].toArray();
   QJsonObject answerObj = answersArray[0].toObject();
   QString answer = answerObj["answer"].toString();
-  QTextDocument textDoc;
-  textDoc.setMarkdown(answer);
-  answer = textDoc.toHtml();
+  m_answer = answer;
+  QTextDocument document;
+  document.setMarkdown(answer);
+  answer = document.toHtml();
   m_ui->wvOutput->setHtml(answer);
 }
 
@@ -54,12 +57,19 @@ void vmcCopilot::slot_navigationRequested(QWebEngineNavigationRequest& request)
     request.url().toString().contains("https://")) {
     request.accept();
     return;
-  } // Accept data:ui and data:code navigation requests.
-  else if(request.url().toString().contains("data:ui") ||
-    request.url().toString().contains("data:code"))
+  } // Handle ui data requests.
+  else if(request.url().toString().contains("data:ui"))
   {
     request.reject();
-    emit signal_navigationRequested(request);
+    QString ui = getUi(request.url().toString());
+    emit signal_navigationRequested(request, ui);
+    return;
+  } // Handle code data requests.
+  else if(request.url().toString().contains("data:code"))
+  {
+    request.reject();
+    QString code = getCode();
+    emit signal_navigationRequested(request, code);
     return;
   } // Reject all other requests.
   else
@@ -67,4 +77,31 @@ void vmcCopilot::slot_navigationRequested(QWebEngineNavigationRequest& request)
     request.reject();
     return;
   }
+}
+
+QString vmcCopilot::getUi(QString url)
+{
+  // Initialize the ui array.
+  QString ui;
+
+  // Get ui parts.
+  QStringList parts = url.split(";");
+  parts.removeFirst();
+  ui = parts.join(";");
+
+  return ui;
+}
+
+QString vmcCopilot::getCode()
+{
+  // Initialize the code string.
+  QString code;
+
+  // Define a regular expression to find code blocks.
+  QRegularExpression re("`{3}python(.*?)`{3}", QRegularExpression::DotMatchesEverythingOption);
+  QRegularExpressionMatchIterator iterator = re.globalMatch(m_answer);
+  QRegularExpressionMatch match = iterator.next();
+  code = match.captured(1).trimmed();
+
+  return code;
 }

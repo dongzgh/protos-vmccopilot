@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <QDialog>
+#include <QJsonArray>
 #include <QWebEngineNavigationRequest>
 
 #include "vmcCopilotNetwork.h"
@@ -23,15 +24,20 @@ public:
   void sendRequest();
 
 signals:
-  void signal_navigationRequested(QWebEngineNavigationRequest& request);
+  void signal_navigationRequested(QWebEngineNavigationRequest& request, QString content);
 
 protected slots:
   void slot_responseReceived(const QString& response);
   void slot_navigationRequested(QWebEngineNavigationRequest& request);;
 
+protected:
+  QString getUi(QString url);
+  QString getCode();
+
 private:
   QString m_url;
   QString m_key;
+  QString m_answer;
   std::unique_ptr<Ui::vmcCopilot> m_ui;
   std::unique_ptr<vmcCopilotNetwork> m_networkManager;
 };
