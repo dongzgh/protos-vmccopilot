@@ -1,0 +1,11 @@
+a[href="data:code"] {
+	text-decoration: none;
+	text-transform: uppercase;
+}
+
+a[href="data:code"] span {
+	color: white !important;
+	background-color: orange;
+	padding: 2px;
+	text-decoration: none !important;
+}

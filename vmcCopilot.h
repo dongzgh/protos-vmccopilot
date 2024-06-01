@@ -31,6 +31,7 @@ protected slots:
   void slot_navigationRequested(QWebEngineNavigationRequest& request);;
 
 protected:
+  QString getPrompt(QString url);
   QString getUi(QString url);
   QString getCode();
 

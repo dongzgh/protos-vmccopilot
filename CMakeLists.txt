@@ -17,7 +17,7 @@ find_package(Qt6 COMPONENTS Widgets Network WebEngineWidgets REQUIRED)
 # - Set header/source/ui files.
 file(GLOB HEADERS "*.h")
 file(GLOB SOURCES "*.cpp")
-file(GLOB UIS "*.ui")
+file(GLOB UIS "*.ui" "*.qrc" "*.css")
 
 # - Add library.
 add_library(vmcCopilot SHARED

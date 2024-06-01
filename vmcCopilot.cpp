@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+#include <QFile>
 #include <QDebug>
 
 vmcCopilot::vmcCopilot(QWidget *parent) :
@@ -41,10 +42,30 @@ void vmcCopilot::slot_responseReceived(const QString& response)
   QJsonObject answerObj = answersArray[0].toObject();
   QString answer = answerObj["answer"].toString();
   m_answer = answer;
-  QTextDocument document;
-  document.setMarkdown(answer);
+  QJsonObject dialogObj = answerObj["dialog"].toObject();
+  QJsonArray promptsArray = dialogObj["prompts"].toArray();
+  if (promptsArray.size() > 0)
+  {
+    for (auto prompt : promptsArray)
+    {
+      QJsonObject promptObj = prompt.toObject();
+      QString displayText = promptObj["displayText"].toString();
+      QString encodedDisplayText = QUrl::toPercentEncoding(displayText);
+      answer.append("\n\n[" + displayText + "](data:prompt;displayText=" + encodedDisplayText + ")");
+    }
+  }
+  QTextDocument document;  
+  document.setMarkdown(answer); 
   answer = document.toHtml();
-  m_ui->wvOutput->setHtml(answer);
+  QTextDocument htmlDocument;
+  QFile file(":/styles/default.css");
+  file.open(QIODevice::ReadOnly);
+  QString styleSheet = file.readAll();
+  file.close();
+  htmlDocument.setDefaultStyleSheet(styleSheet);
+  htmlDocument.setHtml(answer);
+  QString htmlAnaswer = htmlDocument.toHtml();
+  m_ui->wvOutput->setHtml(htmlAnaswer);
 }
 
 void vmcCopilot::slot_navigationRequested(QWebEngineNavigationRequest& request)
@@ -57,26 +78,52 @@ void vmcCopilot::slot_navigationRequested(QWebEngineNavigationRequest& request)
     request.url().toString().contains("https://")) {
     request.accept();
     return;
-  } // Handle ui data requests.
+  } 
+  // Handle prompt data requests.
+  else if (request.url().toString().contains("data:prompt"))
+  {
+    request.reject();
+    QString prompt = getPrompt(request.url().toString());
+    m_ui->leInput->setText(prompt);
+    sendRequest();
+    return;
+  }
+  // Handle ui data requests.
   else if(request.url().toString().contains("data:ui"))
   {
     request.reject();
     QString ui = getUi(request.url().toString());
     emit signal_navigationRequested(request, ui);
     return;
-  } // Handle code data requests.
+  }  
+  // Handle code data requests.
   else if(request.url().toString().contains("data:code"))
   {
     request.reject();
     QString code = getCode();
     emit signal_navigationRequested(request, code);
     return;
-  } // Reject all other requests.
+  } 
+  // Reject all other requests.
   else
   {
     request.reject();
     return;
   }
+}
+
+QString vmcCopilot::getPrompt(QString url)
+{
+  // Initialize the ui array.
+  QString prompt;
+
+  // Get ui parts.
+  QStringList parts = url.split(";");
+  parts.removeFirst();
+  prompt = parts[0].split("=")[1];
+  prompt = QUrl::fromPercentEncoding(prompt.toUtf8());
+
+  return prompt;
 }
 
 QString vmcCopilot::getUi(QString url)
