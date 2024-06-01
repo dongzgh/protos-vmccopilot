@@ -9,3 +9,10 @@ a[href="data:code"] span {
 	padding: 2px;
 	text-decoration: none !important;
 }
+
+a[href^="data:prompt"] span {
+	color: white !important;
+	background-color: cyan;
+	padding: 2px;
+	text-decoration: none !important;
+}
