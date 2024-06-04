@@ -16,3 +16,12 @@ a[href^="data:prompt"] span {
 	padding: 2px;
 	text-decoration: none !important;
 }
+
+pre {
+	background-color: black;
+	color: white;
+}
+
+pre span {
+	font-family: system-ui !important;
+}

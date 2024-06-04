@@ -9,6 +9,7 @@ class vmcCopilotNetwork : public QObject {
 public:
   explicit vmcCopilotNetwork(QObject* parent = nullptr);
   void sendRequest(const QString& url, const QString& key, const QString& question);
+  void sendRequest(const QString& oaUrl, const QString& oaKey, const QJsonObject& oaContext, const QString& question);
 
 signals:
   void signal_responseReceived(const QString& response);
