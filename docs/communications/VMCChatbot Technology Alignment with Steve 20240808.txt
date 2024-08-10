@@ -1,0 +1,7 @@
+Hi, Steve, this Dong and Daniel from Canada, Nadine, Jen and Alex from Germany.
+
+To give you a heads up, that we are a team here in Virtual Manufacturing and Costing business unit. We've just completed a pilot project called VMC.Chatbot during our Hackathon this year in June. We've developed virtual assistant inside of our software, specifically FormingSuite and Simufact.Forming for answering user questions and generate automation scripts using OpenAI and Azure Cloud services.
+
+Last week our team had a meeting talking about next steps and Daniel passed your demo video of RSW Applet to us. We think it's very interesting and we would like to reach you out and see how that's implemented and if there's possibility that our technologies can be aligned. We would also want to know what corporate resources are available for AI technologies, and how we can use them according to your experiences.
+
+Please don't be shy and jump in if I miss something

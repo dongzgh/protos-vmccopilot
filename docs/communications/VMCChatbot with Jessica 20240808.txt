@@ -1,0 +1,17 @@
+Thanks for Jessica inviting me to this meeting for the introduction and follow up on the VMC.Chatbot project.
+
+I guess maybe all of you already watched the demo video of the VMC.Chatbot project that we did during our one week Hackathon this year. If not, I can replay it here, it won't take much time, just 3 minutes and 11 seconds.
+C:\VMC\Codes\VMCCopilot\docs\clipchamp\Exports\hackathon-2024-vmc-chatbot-demo-revised.mp4
+
+Here, I will just re-highlight some of the achievements and potentials from this project:
+C:\VMC\Codes\VMCCopilot\docs\VMC Hackathon 2024 - VMC.Chatbot - Newsletter.pptx
+
+We've also heard that there are some efforts done in other partner business units and coroporation trying to leverage the AI technologies to enhance our products. There's also an AI portal called 'AI at Hexagon' from the Innovation Hub: https://hexmet.sharepoint.com/sites/HXGN-GenAI
+
+I think our VMC.Chatbot pilot project idea is very much aligned with the corporate strategy regarding AI and I think the VMC.Chatbot is a good example of using the AI technology in a specific vertical market. To give you a comparison, Microsoft has this Bing Copilot for general public, but also they have this Microsoft 365 Copilot in the MS office vertical market, although they use the same AI engine, but for the vertical market there's a customization. In addition, I think software specific chatbot powered by AI engine is beoming more and more common standard feature, for example Adobe has AI assistant in Acrobat Reader, Jira has AI assistant in there web portal, even Ansys released there first AnsysGPT in April this year.
+
+So, in order to push this idea forward we need collaborative efforts on this project to make it happen as soon as in the next year. From our development side, we tryed to reach out to other business unit developers working on similar ideas to see if our technologies can be aligned together or what's the best practices so far. We also need some efforts from IT, expecially Azure account manager to see if we can do more experiments to achieve better results.
+
+AI assistant is not just talking about knowledge search, I would like it to give me engineering solutions to my questions, I would like it to generate automation scripts for me to run my software.
+
+For the curent status of the VMC.Chatbot project, I would say that we've already passed the proof of concept stage. We need some time of brainstorming for the production level redesign (technology and business model), then it should to go.
