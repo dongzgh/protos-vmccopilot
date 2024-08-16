@@ -1,0 +1,1192 @@
+---
+name: ''
+description: ''
+authors: []
+tags: []
+version: ''
+base: ''
+model:
+  api: chat
+  configuration:
+    type: azure_openai
+    azure_deployment: fgqnagpt35t16
+  parameters:
+    temperature: 0.7
+    top_p: 0.95
+    stop: []
+    frequency_penalty: 0
+    presence_penalty: 0
+    max_tokens: 800
+    past_messages_to_include: 10
+  response: {}
+sample: {}
+input: {}
+output: {}
+template:
+  type: jinja2
+  parser: prompty
+---
+system:
+You are an AI assistant to help engineers generate Python scripts
+
+user:
+Example 1
+assistant:
+import os
+import sys
+import numpy as np
+
+from fti.core import *
+import fti.geometry as geometry
+import fti.geometry.utilities
+import fti.addendum as addendum
+import fti.process as process
+import fti.forming as forming
+import fti.blanking as blanking
+import fti.nesting as nesting
+import fti.line_die_plan as linedieplan
+from fti.line_die_plan import LDPBlankingSettings
+from fti.line_die_plan import LDPProcessSettings
+from fti.line_die_plan import LDPPressPartPositioning
+import fti.settings as settings
+
+#--------------------------------------------
+# Set up working environment
+#--------------------------------------------
+# Set working directory.
+root_dir = os.path.dirname(__file__);
+os.chdir(root_dir)
+sys.path.append(root_dir)
+
+# Create data folder.
+data_dir = os.path.realpath(root_dir + '/data')
+if not os.path.exists(data_dir):
+    os.mkdir(data_dir)
+
+# Create output folder.
+out_dir = os.path.realpath(root_dir + '/out')
+if not os.path.exists(out_dir):
+    os.mkdir(out_dir)
+
+# Define system unit.
+settings.set_linear_unit(2)
+
+# New project.
+new_project()
+
+# Define project name.
+proj_name = os.path.realpath(root_dir + '/out/' + os.path.basename(__file__).split('.')[0] + '.ftc')
+
+#--------------------------------------------
+# Working in geometry workbench
+#--------------------------------------------
+# Import geometry.
+model_file = os.path.realpath(root_dir + '/data/cad/125.igs')
+geometry.import_part(model_file)
+
+# Get the geoset feature.
+part_feature = get_feature_by_tag('ftiTagSkin', -1)
+  
+# Define material.
+geometry.define_material(part_feature, '180A CR', 1.2)
+
+# Deifne skin location.
+geometry.define_skin_location(part_feature, 1)
+
+# Fill holes.
+holes = [12,2,9,10,12,13,21,22,4,5,7,8,11,17,19,25,14,18,24,15,20,16]
+geometry.fill_holes(part_feature, holes)
+
+# Unfill holes.
+lines = [5,12,7,8,15,11,13,14,10,9]
+geometry.unfill_holes(part_feature, lines)
+
+# Fill notch.
+notch_data_file = os.path.realpath(root_dir + '/data/fill_notch.npy')
+# geometry.save_fill_notch(f)
+geometry.utilities.fill_notch(part_feature, notch_data_file)
+
+# Define feature - flange.
+faces = [376,723,344,901,80,156,1020,963,283,266,564,1077,77,871,925,962,785,45,161,162,163,203,435,454,498,608,755]
+geometry.define_part_feature(part_feature, 1, 'Flange 1', faces)
+
+# Define feature - extrusion.
+faces = [58,972,388,108,357,1086,213,1055,840,220,1004,948,1068]
+geometry.define_part_feature(part_feature, 2, 'Extrusion 1', faces)    
+
+# Create tipping.
+vector = [0.023, -0.999, -0.045]
+geometry.create_tipping(part_feature, vector)
+tipping = part_feature.get_attribute_by_tag('ftiTagTipping', -1)
+
+# Clear selection.
+clear_selection()   
+
+# # Create flat binder.
+# create_flat_binder(part_feature, tipping, 10)   
+
+# Create silhouette binder.
+binder_shape_data_file = os.path.realpath(root_dir + '/data/create_silhouette_binder.npy')
+# geometry.utilities.save_create_silhouette_binder(binder_shape_data_file)
+geometry.utilities.create_silhouette_binder(part_feature, tipping, binder_shape_data_file)
+
+# Get the binder feature.
+binder_feature = get_feature_by_tag('ftiTagSkin', -1)
+    
+# Position binder.
+binder_position_data_file = os.path.realpath(root_dir + '/data/position_binder.npy')
+# geometry.utilities.save_position_binder(binder_position_data_file)
+geometry.utilities.position_binder(binder_feature, binder_position_data_file, -20)
+
+#--------------------------------------------
+# Working in 3d addendum workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1033)
+
+# Select die geometry set.
+addendum.select_die_geoset(part_feature, tipping)
+
+# Create punch exteion curve.
+addendum.create_pec_contour(10.0, 12.0, 0.25, 0.25, False)
+
+# Create die radius tangent curve.
+addendum.create_cob_contour(8.0, 6.0, 0.25, 0.25, False)
+
+# Create die face.
+addendum.create_die_face()
+
+# Create trim lines.
+addendum.create_trim_lines(0, [14.0, 18.0, 1])
+
+# Create boundary trim lines.
+addendum.create_btl_contour(10.0, 0.25, 0.25, False)
+
+# Create first form.
+addendum.create_first_form()
+
+# Create tooling.
+addendum.create_tooling()
+
+#--------------------------------------------
+# Working in process workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1018)
+
+# Generate mesh.
+process.generate_mesh(0.07, 16.041)
+
+# Create tipping.
+process.create_tipping(tipping.parameter.vector_value)
+
+# Define process.
+process.define_process(1)
+
+#--------------------------------------------
+# Working in forming workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1017)
+
+# Solve.
+forming.solve()
+
+#--------------------------------------------
+# Working in blanking workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1005)
+
+#--------------------------------------------
+# Working in nesting workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1006)
+
+# Define layout parameters.
+nesting.define_layout_parameters(3.5, 3.5)
+
+# Solve.
+nesting.solve(251)
+
+#--------------------------------------------
+# Working in linedieplan workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1026)
+
+# Define blank settings.
+blank_settings = LDPBlankingSettings()
+blank_settings.min_scrap_length = 50.0
+blank_settings.max_scrap_length = 400.0
+blank_settings.min_clearance = 8.0
+linedieplan.define_blank_settings(blank_settings)
+
+# Generate blanking process.
+linedieplan.generate_blanking_process()
+
+# Generate part features.
+linedieplan.generate_part_features()
+
+# Define process settings.
+process_settings = LDPProcessSettings()
+process_settings.min_trimline_segment_length = 25.0
+process_settings.max_trimline_segment_length = 400.0
+process_settings.max_cutout_length = 300.0
+process_settings.cam_threshold_angle = 30.0
+process_settings.group_angle_range = 10.0
+process_settings.min_box_depth = 50.0
+process_settings.max_box_depth = 400.0
+process_settings.min_box_width = 50.0
+process_settings.max_box_width = 400.0
+process_settings.min_box_height = 50.0
+process_settings.max_box_height = 400.0
+process_settings.tool_depth = 100.0
+process_settings.min_clearance = 8.0
+linedieplan.define_process_settings(process_settings)
+
+# Define press coordinate system.
+linedieplan.define_press_CS_gui1(0, 0)
+
+# Generate process.
+linedieplan.generate_process()
+
+# Summary.
+linedieplan.summary()
+
+#--------------------------------------------
+# Post processing and operations
+#--------------------------------------------
+# Save the project.
+save_project(proj_name)
+
+# Close project.
+close_project()
+
+
+user:
+Example 2
+assistant:
+# Import python libraries
+import os
+import sys
+import numpy as np
+
+# Import Forming Suite libraries
+from fti.core import *
+import fti.geometry as geometry
+import fti.settings as settings
+
+#--------------------------------------------
+# Set up working environment
+#--------------------------------------------
+# Set working directory.
+root_dir = os.path.dirname(__file__);
+os.chdir(root_dir)
+sys.path.append(root_dir)
+
+# Create data folder.
+data_dir = os.path.realpath(root_dir + '/data')
+if not os.path.exists(data_dir):
+  os.mkdir(data_dir)
+
+# Create output folder.
+out_dir = os.path.realpath(root_dir + '/out')
+if not os.path.exists(out_dir):
+  os.mkdir(out_dir)
+
+# Define system unit.
+settings.set_linear_unit(2)
+
+# New project.
+new_project()
+
+# Define project name.
+proj_name = os.path.realpath(root_dir + '/out/' + os.path.basename(__file__).split('.')[0] + '.ftc')
+
+#--------------------------------------------
+# Working in geometry workbench
+#--------------------------------------------
+# import a part.
+cad_name = os.path.realpath(root_dir + '/data/cad/box.igs')
+geometry.import_part(cad_name)
+
+# Get feature 1.
+feature1 = get_feature_by_tag('ftiTagSkin',  -1)
+
+# Define material.
+geometry.define_material(feature1, '280A CR', 1.5)
+
+# Deifne skin location.
+geometry.define_skin_location(feature1, 1)
+
+# Split geometry set.
+geometry.split_geoset(feature1, [26,24,15])
+
+# Get feature 2.
+feature2 = get_feature_by_tag('ftiTagSkin', -1)
+
+# Merg getometry sets.
+geometry.merge_geosets(feature1, [feature2])
+
+# Get geometry 1.
+geometry1 = feature1.geometry
+
+# Create symmetry.
+origin, _ = geometry1.eval_local_coordinate_system()
+matrix = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0]
+geometry.create_symmetry(feature1, origin, matrix)
+
+# Copy geometry set.
+geometry.copy_geoset(feature1)
+
+# Get feature 3.
+feature3 = get_feature_by_tag('ftiTagSkin', -1)
+
+# Move geometry set.
+unit3 = np.array([-1.0, 0.0, 0.0])
+scale3 = 50
+vector3 = (unit3 * scale3).tolist()
+geometry.move_geosets([feature3], vector3)
+
+# Mirror geometry set.
+geometry.mirror_geoset(feature3)
+
+#--------------------------------------------
+# Post processing and operations
+#--------------------------------------------
+# Save the project.
+save_project(proj_name)
+
+# Close project.
+close_project()
+
+
+user:
+Example 3
+assistant:
+import os
+import sys
+import numpy as np
+import json
+import csv
+
+from fti.core import *
+import fti.geometry as geometry
+import fti.process as process
+import fti.forming as forming
+import fti.blanking as blanking
+import fti.prog_nesting as prognesting
+import fti.stretch_web as stretchweb
+from fti.prog_die_process import PDProProcessSettings
+from fti.line_die_plan import LDPBlankingSettings
+from fti.line_die_plan import LDPProcessSettings
+import fti.settings as settings
+
+#--------------------------------------------
+# Set up working environment
+#--------------------------------------------
+# Set working directory.
+root_dir = os.path.dirname(__file__)
+os.chdir(root_dir)
+sys.path.append(root_dir)
+
+# Create data folder.
+data_dir = os.path.realpath(root_dir + '/data')
+if not os.path.exists(data_dir):
+  os.mkdir(data_dir)
+
+# Create output folder.
+out_dir = os.path.realpath(root_dir + '/out')
+if not os.path.exists(out_dir):
+  os.mkdir(out_dir)
+
+# Define system unit.
+settings.set_linear_unit(2)
+
+for i in range(1, 11):
+  # New project.
+  new_project()
+
+  # Define project name.
+  proj_name = os.path.realpath(root_dir + '/out/' + os.path.basename(__file__).split('.')[0] + str(i) + '.ftc')
+
+  #--------------------------------------------
+  # Working in geometry workbench
+  #--------------------------------------------
+  # Import geometry.
+  model_file = os.path.realpath(root_dir + '/data/cad/Part' + str(i) + '.igs')
+  geometry.import_part(model_file)
+
+  # Capture view.
+  view_name = proj_name + '_0.png'
+  capture_view(view_name)
+  
+  # Get the part feature.
+  part_feature = get_feature_by_tag('ftiTagSkin', -1)
+
+  # Define material.
+  geometry.define_material(part_feature, '180A CR', 25.4)
+
+  # Deifne skin location.
+  geometry.define_skin_location(part_feature, 1)
+
+  #--------------------------------------------
+  # Working in process workbench
+  #--------------------------------------------
+  # Create workbench.
+  create_workbench_by_type('process setup')
+
+  # Generate mesh.
+  process.generate_mesh(0.07, 16.041)
+
+  # Create tipping.
+  vector = np.array([0.0, 0.0, 1.0])
+  process.create_tipping(vector)
+
+  # Define process.
+  process.define_process(1)
+
+  #--------------------------------------------
+  # Working in forming workbench
+  #--------------------------------------------
+  # Create workbench.
+  create_workbench_by_type('forming')
+
+  # Solve.
+  forming.solve()
+
+  # Show displacement result.
+  forming.show_result('displacement magnitude')
+
+  # Capture view.
+  view_name = proj_name + '_1.png'
+  capture_view(view_name)
+      
+  #--------------------------------------------
+  # Working in blanking workbench
+  #--------------------------------------------
+  # Create workbench.
+  create_workbench_by_type('blank')
+
+  # Add addendum
+  blank_feature = get_feature_by_tag('ftiTagBlank', 0)
+  blanking.define_uniform_addendum(blank_feature, 5, 0)    
+  
+  #--------------------------------------------
+  # Working in nesting workbench
+  #--------------------------------------------
+  # Create workbench.
+  create_workbench_by_type('nesting')
+
+  # Define layout parameters.
+  nesting.define_layout_parameters(3.5, 3.5)
+
+  # Solve.
+  nesting.solve('one up')
+  
+  # Capture view.
+  view_name = proj_name + '_2.png'
+  capture_view(view_name)
+     
+  # Solve.
+  nesting.solve('two up')
+  
+  # Capture view.
+  view_name = proj_name + '_3.png'
+  capture_view(view_name)
+  
+   # Solve.
+  nesting.solve('cut off dies')
+  
+  # Capture view.
+  view_name = proj_name + '_4.png'
+  capture_view(view_name)
+  
+  # Export layout.
+  f = get_feature_by_path('Nesting 1/Results/Cut Off Dies/Trapezoid')
+  igs_name = proj_name + '_4_0.igs'
+  nesting.export_layout(f, igs_name)
+  f = get_feature_by_path('Nesting 1/Results/Cut Off Dies/Miter')
+  igs_name = proj_name + '_4_1.igs'
+  nesting.export_layout(f, igs_name)
+  f = get_feature_by_path('Nesting 1/Results/Cut Off Dies/Parallelogram')
+  igs_name = proj_name + '_4_2.igs'
+  nesting.export_layout(f, igs_name)
+  
+  #--------------------------------------------
+  # Working in linedieplan workbench
+  #--------------------------------------------
+  # Select layout.
+  f = get_feature_by_path('Nesting 1/Results/One Up/One Up 1')
+  select_feature(f)
+  
+  # Create workbench.
+  create_workbench_by_type('line die plan')
+
+  # Define blank settings.
+  blank_settings = LDPBlankingSettings()
+  blank_settings.min_scrap_length = 50.0
+  blank_settings.max_scrap_length = 400.0
+  blank_settings.min_clearance = 8.0
+  linedieplan.define_blank_settings(blank_settings)
+
+  # Generate blanking process.
+  linedieplan.generate_blanking_process()
+
+  # Generate part features.
+  linedieplan.generate_part_features()
+  
+  # Capture view.
+  view_name = proj_name + '_5.png'
+  capture_view(view_name)
+
+  # Define process settings.
+  process_settings = LDPProcessSettings()
+  process_settings.min_trimline_segment_length = 25.0
+  process_settings.max_trimline_segment_length = 400.0
+  process_settings.max_cutout_length = 300.0
+  process_settings.cam_threshold_angle = 30.0
+  process_settings.group_angle_range = 10.0
+  process_settings.min_box_depth = 50.0
+  process_settings.max_box_depth = 400.0
+  process_settings.min_box_width = 50.0
+  process_settings.max_box_width = 400.0
+  process_settings.min_box_height = 50.0
+  process_settings.max_box_height = 400.0
+  process_settings.tool_depth = 100.0
+  process_settings.min_clearance = 8.0
+  linedieplan.define_process_settings(process_settings)
+  
+  # Define press coordinate system.
+  linedieplan.define_press_CS_gui1(0, 0)
+
+  # Generate process.
+  linedieplan.generate_process()
+
+  # Summary.
+  linedieplan.summary()
+  
+  # Export summary.
+  raw_data = linedieplan.get_summary_info()
+  list_data = []
+  for i, _ in enumerate(raw_data):
+    list_data.append(dict((x, y) for x, y in raw_data[i]))
+  csv_name = proj_name + '_6.csv' 
+  with open(csv_name, 'w', newline='') as f:
+    header = list_data[0].keys()    
+    writer = csv.DictWriter(f, header)
+    writer.writeheader()
+    writer.writerows(list_data)
+
+  #--------------------------------------------
+  # Post processing and operations
+  #--------------------------------------------
+  # Save the project.
+  save_project(proj_name)
+
+  # Close project.
+  close_project()
+ 
+
+user:
+Example 4
+assistant:
+import os
+import sys
+import numpy as np
+
+from fti.core import *
+import fti.geometry as geometry
+import fti.process as process
+import fti.forming as forming
+import fti.blanking as blanking
+import fti.prog_nesting as prognesting
+import fti.stretch_web as stretchweb
+import fti.prog_die_process as progdieprocess
+from fti.prog_die_process import PDProProcessSettings
+import fti.settings as settings
+
+#--------------------------------------------
+# Set up working environment
+#--------------------------------------------
+# Set working directory.
+root_dir = os.path.dirname(__file__);
+os.chdir(root_dir)
+sys.path.append(root_dir)
+
+# Create data folder.
+data_dir = os.path.realpath(root_dir + '/data')
+if not os.path.exists(data_dir):
+    os.mkdir(data_dir)
+
+# Create output folder.
+out_dir = os.path.realpath(root_dir + '/out')
+if not os.path.exists(out_dir):
+    os.mkdir(out_dir)
+
+# Define system unit.
+settings.set_linear_unit(2)
+
+# New project.
+new_project()
+
+# Define project name.
+proj_name = os.path.realpath(root_dir + '/out/' + os.path.basename(__file__).split('.')[0] + '.ftc')
+
+#--------------------------------------------
+# Working in geometry workbench
+#--------------------------------------------
+# Import geometry.
+model_file = os.path.realpath(root_dir + '/data/cad/halfbox.igs')
+geometry.import_part(model_file)
+
+# Get the part feature.
+part_feature = get_feature_by_tag('ftiTagSkin', -1)
+
+# Define material.
+geometry.define_material(part_feature, '180A CR', 25.4)
+
+# Deifne skin location.
+geometry.define_skin_location(part_feature, 1)
+
+# Define feature - flange.
+faces = [4,20,2,3,7,23,6,1,24,5]
+geometry.define_part_feature(part_feature, 1, 'Flange 1', faces)
+faces = [21,22]
+geometry.define_part_feature(part_feature, 1, 'Flange 2', faces)
+
+# Define feature - extrusion.
+faces = [11,19,10,18]
+geometry.define_part_feature(part_feature, 2, 'Extrusion 1', faces)
+
+# Define feature - embossment.
+faces = [14,13,12,8,17,16,15]
+geometry.define_part_feature(part_feature, 3, 'Embossment 1', faces)
+
+#--------------------------------------------
+# Working in process workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1018)
+
+# Generate mesh.
+process.generate_mesh(0.07, 16.041)
+
+# Create tipping.
+vector = np.array([0, 0, 1.0])
+process.create_tipping(vector)
+
+# Define process.
+process.define_process(1)
+
+#--------------------------------------------
+# Working in forming workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1017)
+
+# Solve.
+forming.solve()
+
+#--------------------------------------------
+# Working in blanking workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1005)
+
+# Add addendum
+blank_feature = get_feature_by_tag('ftiTagBlank', 0)
+blanking.define_uniform_addendum(blank_feature, 5, 0)
+
+#--------------------------------------------
+# Working in prognesting workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1016)
+
+# Define die plane.
+prognesting.define_die_plane(0, 0.0)
+
+# Define layout parameters.
+prognesting.define_layout_parameters(76.0, 76.0, 12.0, 12.0, 6.0, 12.0, 262)
+
+#--------------------------------------------
+# Working in stretchweb workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1024)
+
+stretchweb.create_default_solid_webs(0, 6, 51)
+    
+#--------------------------------------------
+# Working in progdieprocess workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1029)
+
+# Define rotation center.
+progdieprocess.define_rot_center()
+
+# Define process settings.
+process_settings = PDProProcessSettings()
+process_settings.min_scrap_diagonal = 10.0
+process_settings.max_scrap_diagonal = 300.0
+process_settings.min_trimline_segment_length = 80.0
+process_settings.max_trimline_segment_length = 100.0
+process_settings.cam_threshold_angle = 30.0
+process_settings.group_angle_range = 10.0
+process_settings.min_box_depth = 30.0
+process_settings.min_box_width = 30.0
+process_settings.min_box_height = 30.0
+process_settings.max_box_depth = 200.0
+process_settings.max_box_width = 200.0
+process_settings.max_box_height = 200.0
+process_settings.tool_depth = 100.0
+process_settings.max_cutout_length = 200.0
+process_settings.min_scrap_clearance = 8.0
+progdieprocess.define_process_settings(process_settings)
+
+# Generate 2D process.
+progdieprocess.generate_2d_process()
+
+# Generate 3D process.
+progdieprocess.generate_3d_process()
+
+# Summary.
+progdieprocess.summary()
+    
+#--------------------------------------------
+# Post processing and operations
+#--------------------------------------------
+# Save the project.
+save_project(proj_name)
+
+# Close project.
+close_project()
+
+
+
+user:
+Example 5
+assistant:
+import os
+import sys
+import numpy as np
+
+from fti.core import *
+import fti.geometry as geometry
+import fti.geometry.utilities
+import fti.process as process
+import fti.forming as forming
+import fti.blanking as blanking
+import fti.nesting as nesting
+import fti.line_die_plan as linedieplan
+from fti.line_die_plan import LDPBlankingSettings
+from fti.line_die_plan import LDPProcessSettings
+from fti.line_die_plan import LDPPressPartPositioning
+import fti.settings as settings
+
+#--------------------------------------------
+# Set up working environment
+#--------------------------------------------
+# Set working directory.
+root_dir = os.path.dirname(__file__);
+os.chdir(root_dir)
+sys.path.append(root_dir)
+
+# Create data folder.
+data_dir = os.path.realpath(root_dir + '/data')
+if not os.path.exists(data_dir):
+    os.mkdir(data_dir)
+
+# Create output folder.
+out_dir = os.path.realpath(root_dir + '/out')
+if not os.path.exists(out_dir):
+    os.mkdir(out_dir)
+
+# Define linear unit.
+settings.set_linear_unit(1)
+
+# New project.
+new_project()
+
+# Define project name.
+proj_name = os.path.realpath(root_dir + '/out/' + os.path.basename(__file__).split('.')[0] + '.ftc')
+
+#--------------------------------------------
+# Working in geometry workbench
+#--------------------------------------------
+# Import geometry.
+model_file = os.path.realpath(root_dir + '/data/cad/panel.igs')
+geometry.import_part(model_file)
+
+# Get the part feature.
+part_feature = get_feature_by_tag('ftiTagSkin', -1)
+
+# Define material.
+geometry.define_material(part_feature, '180A CR', 0.039)
+
+# Deifne skin location.
+geometry.define_skin_location(part_feature, 1)
+
+# Fill notches.
+geometry.utilities.fill_notch(part_feature, os.path.realpath(root_dir + '/data/notch1.npy'))
+geometry.utilities.fill_notch(part_feature, os.path.realpath(root_dir + '/data/notch2.npy'))
+
+#--------------------------------------------
+#--------------------------------------------
+# Working in process workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1018)
+
+# Generate mesh.
+process.generate_mesh(0.07, 0.156)
+
+# Create tipping.
+vector = np.array([-0.185, 0.679, -0.711])
+process.create_tipping(vector)
+
+# Define process.
+process.define_process(1)
+
+#--------------------------------------------
+# Working in forming workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1017)
+
+# Solve.
+forming.solve()
+    
+#--------------------------------------------
+# Working in blanking workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1005)
+
+#--------------------------------------------
+# Working in nesting workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1006)
+
+# Define layout parameters.
+nesting.define_layout_parameters(0.125, 0.125)
+
+# Solve.
+nesting.solve(251)
+    
+#--------------------------------------------
+# Working in linedieplan workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1026)
+
+# Define blank settings.
+blank_settings = LDPBlankingSettings()
+blank_settings.min_scrap_length = 1.969
+blank_settings.max_scrap_length = 15.748
+blank_settings.min_clearance = 0.315
+linedieplan.define_blank_settings(blank_settings)
+
+# Generate blanking process.
+linedieplan.generate_blanking_process()
+
+# Generate part features.
+linedieplan.generate_part_features()
+
+# Define process settings.
+process_settings = LDPProcessSettings()
+process_settings.min_trimline_segment_length = 0.984
+process_settings.max_trimline_segment_length = 15.748
+process_settings.max_cutout_length = 11.811
+process_settings.cam_threshold_angle = 30.0
+process_settings.group_angle_range = 10.0
+process_settings.min_box_depth = 1.969
+process_settings.max_box_depth = 15.748
+process_settings.min_box_width = 1.969
+process_settings.max_box_width = 15.748
+process_settings.min_box_height = 1.969
+process_settings.max_box_height = 15.748
+process_settings.tool_depth = 3.937
+process_settings.min_clearance = 0.315
+linedieplan.define_process_settings(process_settings)
+
+# Define press coordinate system.
+position_1 = LDPPressPartPositioning()
+position_1.origin = np.array([-0.39812560547630943, 0.71652827018493803, 0.25704187723329708])
+position_1.matrix  = np.array([
+-0.96207701667069401, -0.27259472186960587, -0.0099965795575021055,
+-0.20052363423742064, 0.68191910923941990, 0.70340358299224892,
+-0.18492724544056346, 0.67873297110347353, -0.71072038653103031
+])
+position_2 = LDPPressPartPositioning()
+linedieplan.define_press_CS(position_1, position_2, 12, 0.0, 0, 0, 0.3)
+
+# Generate process.
+linedieplan.generate_process()
+
+# Summary.
+linedieplan.summary()
+
+#--------------------------------------------
+# Post processing and operations
+#--------------------------------------------
+# Save the project.
+save_project(proj_name)
+
+# Close project.
+close_project()
+
+user:
+Example 6
+assistant:
+import os
+import sys
+import numpy as np
+
+# Import Forming Suite libraries
+from fti.core import *
+import fti.geometry as geometry
+import fti.geometry.utilities
+import fti.process as process
+import fti.forming as forming
+import fti.springback as springback
+import fti.settings as settings
+
+#--------------------------------------------
+# Set up working environment
+#--------------------------------------------
+# Set working directory.
+root_dir = os.path.dirname(__file__);
+os.chdir(root_dir)
+sys.path.append(root_dir)
+
+# Create data folder.
+data_dir = os.path.realpath(root_dir + '/data')
+if not os.path.exists(data_dir):
+    os.mkdir(data_dir)
+
+# Create output folder.
+out_dir = os.path.realpath(root_dir + '/out')
+if not os.path.exists(out_dir):
+    os.mkdir(out_dir)
+
+# Define linear unit.
+settings.set_linear_unit(1)
+
+# New project.
+new_project()
+
+# Define project name.
+proj_name = os.path.realpath(root_dir + '/out/' + os.path.basename(__file__).split('.')[0] + '.ftc')
+
+#--------------------------------------------
+# Working in geometry workbench
+#--------------------------------------------
+# Import geometry.
+model_file = os.path.realpath(root_dir + '/data/cad/panel.igs')
+geometry.import_part(model_file)
+
+# Get the part feature.
+part_feature = get_feature_by_tag('ftiTagSkin', -1)
+
+# Define material.
+geometry.define_material(part_feature, '180A CR', 0.039)
+
+# Deifne skin location.
+geometry.define_skin_location(part_feature, 1)
+
+# Fill notches.
+geometry.utilities.fill_notch(part_feature, os.path.realpath(root_dir + '/data/notch1.npy'))
+geometry.utilities.fill_notch(part_feature, os.path.realpath(root_dir + '/data/notch2.npy'))
+
+#--------------------------------------------
+# Working in process workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1018)
+
+# Generate mesh.
+process.generate_mesh(0.07, 0.156)
+
+# Create tipping.
+vector = np.array([-0.185, 0.679, -0.711])
+process.create_tipping(vector)
+
+# Define process.
+process.define_process(1)
+
+#--------------------------------------------
+# Working in forming workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1017)
+
+# Solve.
+forming.solve()
+
+#--------------------------------------------
+# Working in springback workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1009)
+
+# Solve.
+springback.solve()
+
+# Export result.
+result_name = os.path.realpath(root_dir + '/out/' + os.path.basename(__file__).split('.')[0] + '.arc')
+springback.export_result(result_name, 0, 2)
+
+#--------------------------------------------
+# Post processing and operations
+#--------------------------------------------
+# Save the project.
+save_project(proj_name)
+
+# Close project.
+close_project()
+  
+
+user:
+Example 7
+assistant:
+# Import python libraries
+import os
+import sys
+import numpy as np
+
+# Import Forming Suite libraries
+from fti.core import *
+import fti.geometry as geometry
+import fti.incremental_setup as incrementalsetup
+import fti.increment as increment
+from fti.increment import BaseOperation
+from fti.increment import SkinBaseOperation
+from fti.increment import OperationTool
+from fti.increment import BHOperationTool
+from fti.increment import FormingOperation
+import fti.settings as settings
+
+#--------------------------------------------
+# Set up working environment
+#--------------------------------------------
+# Set working directory.
+root_dir = os.path.dirname(__file__);
+os.chdir(root_dir)
+sys.path.append(root_dir)
+
+# Create data folder.
+data_dir = os.path.realpath(root_dir + '/data')
+if not os.path.exists(data_dir):
+    os.mkdir(data_dir)
+
+# Create output folder.
+out_dir = os.path.realpath(root_dir + '/out')
+if not os.path.exists(out_dir):
+    os.mkdir(out_dir)
+
+# Define system unit.
+settings.set_linear_unit(2)
+
+# New project.
+new_project()
+
+# Define project name.
+proj_name = os.path.realpath(root_dir + '/out/' + os.path.basename(__file__).split('.')[0] + '.ftc')
+
+#--------------------------------------------
+# Working in geometry workbench
+#--------------------------------------------
+# Import a part.
+model_file = os.path.realpath(root_dir + '/data/cad/blank.igs')
+geometry.import_part(model_file)
+model_file = os.path.realpath(root_dir + '/data/cad/blank_holder.igs')
+geometry.import_part(model_file)
+model_file = os.path.realpath(root_dir + '/data/cad/punch.igs')
+geometry.import_part(model_file)
+model_file = os.path.realpath(root_dir + '/data/cad/die.igs')
+geometry.import_part(model_file)
+
+# Get blank feature.
+blank_feature = get_feature_by_tag('ftiTagSkin',  0)
+
+# Define material.
+geometry.define_material(blank_feature, '180A CR', 1.0)
+
+#--------------------------------------------
+# Working in incrementalsetup workbench
+#--------------------------------------------
+# Create workbench.
+create_workbench_by_type(1027)
+
+# Setup incremental.
+# - Get featrues.
+blank_feature = get_feature_by_tag('ftiTagSkin', 0, 0)
+blank_holder_feature = get_feature_by_tag('ftiTagSkin', 1, 0)
+punch_feature = get_feature_by_tag('ftiTagSkin', 2, 0)
+die_feature = get_feature_by_tag('ftiTagSkin', 3, 0)
+
+# - Set skin base op.
+skin_operation = SkinBaseOperation()
+skin_operation.skin_feature = blank_feature
+
+# - Set forming op 1.
+tool_punch = OperationTool()
+tool_punch.skin_feature = punch_feature
+tool_punch.fixed = False
+tool_die = OperationTool(1)
+tool_die.skin_feature = die_feature
+tool_blank_holder = BHOperationTool()
+tool_blank_holder.skin_feature = blank_holder_feature
+tool_blank_holder.force = 10000.0
+tool_blank_holder.direction = 1
+tools = [tool_punch, tool_die, tool_blank_holder.base]
+forming_operation = FormingOperation('OP10', tools)
+forming_operation.location = 1
+
+# Set process.
+operations = [skin_operation.base, forming_operation.base]
+incrementalsetup.setup_processes(0, operations)
+
+# Change movement direction.
+tipping_feature = get_feature_by_tag('ftiTagTipping', 0)
+if tipping_feature.status != 0:
+    p = tipping_feature.parameter
+    v = np.array(p.vector_value) * -1.0
+    p.vector_value = v
+    tipping_feature.status = 0
+
+# Updae feature tree.
+update_feature_tree()
+
+# #--------------------------------------------
+# # Working in increment workbench
+# #--------------------------------------------
+# # Create workbench.
+# create_workbench_by_type(1013)
+
+# # Read settings from database.
+# settings = increment.read_settings(0)
+
+# # Set operation settings.
+# operation_feature = get_feature_by_tag('ftiTagOperation', 0, 1)
+# increment.define_settings(operation_feature, settings[0])
+
+# # Solve.
+# increment.solve()
+    
+#--------------------------------------------
+# Post processing and operations
+#--------------------------------------------
+# Save the project.
+save_project(proj_name)
+
+# Close project.
+close_project()
+
+
