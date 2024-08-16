@@ -1,0 +1,32 @@
+VMC.Chatbot (Virtual Software Assitant)
+
+Problems:
+- Nobody has enough time to read tons of help documentations
+- Nobody has good memories about everything of our product
+- Even experience users have hard time to find information about a specific functionality
+- We don't have call centers and menpowers 24 hours 7 days
+
+Opportunities:
+- LLM has been developed to a quite mature state
+- Performance of cloud service providers has been improved a lot
+- AI engines are already integrated with cloud services
+
+Ideas:
+- To develop a AI (LLM) based chatbot as a virtual software assitant for our products
+
+Benetifs:
+- Reduce the workload of supporting engineers answering naiive questions
+- Enable engineers to focus more on maintaining and enhancingthe knowledge database
+- Self-hosted and curated knowledge database to better serve our users in specific vertical markets
+- A more natural interactive experice to users (Command->GUI->Scripts->Chat)
+
+Future - VMC.Copilot:
+- No need for users to find the use of a specific functionality, just ask and we will show it
+- No need for users to find a specific GUI item, just ask and we will show it
+- No need for users to write a script, just ask and we will generate it
+- No need for users to ask Google or ChatGPT to understand scientific jargons, just ask and we will explain it
+
+First Step:
+- Build self-curated knowledge database for that VMC product's specifc vertical market
+- Develop a general chatbot for one (or more) of VMC products
+- Find some good examples to showcase the experiments
