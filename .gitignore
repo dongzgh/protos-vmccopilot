@@ -399,3 +399,13 @@ FodyWeavers.xsd
 
 # Project specific.
 out/
+
+# Python specific.
+.env/
+__pycache__/
+
+# Data specific.
+data/
+
+# VS Code specific.
+.vscode/
