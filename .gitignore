@@ -405,7 +405,10 @@ out/
 __pycache__/
 
 # Data specific.
-data/
+db/
+*.faiss 
+*.npy
+*.pkl
 
 # VS Code specific.
 .vscode/

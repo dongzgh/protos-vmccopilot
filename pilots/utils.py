@@ -6,8 +6,8 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from sentence_transformers import SentenceTransformer
 from langchain_huggingface import HuggingFaceEmbeddings
-import numpy as np
 import os
+from os.path import realpath, join
 import shutil
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -38,7 +38,7 @@ def chunk_docs(docs: list) -> list:
     return chunks
 
 
-def save_embeddings(chunks: list, dir: str = 'embeddings.db'):
+def save_embeddings(chunks: list, db_dir: str):
     # Initialize embedding model
     embeddings = HuggingFaceEmbeddings(
         model_name='sentence-transformers/all-MiniLM-L6-v2')
@@ -56,18 +56,24 @@ def save_embeddings(chunks: list, dir: str = 'embeddings.db'):
     )
 
     # Add embeddings and documents to the vector store
-    vector_store.add_documents(chunks)
+    size = len(chunks)
+    for i, chunk in enumerate(chunks):
+        print(f'Adding chunk {i+1} of {size} to the vector store...')
+        vector_store.add_documents([chunk])
 
     # Save the FAISS index to disk
-    if os.path.exists(dir):
-        shutil.rmtree(dir)
-    vector_store.save_local(dir)
+    if os.path.exists(db_dir):
+        shutil.rmtree(db_dir)
+    vector_store.save_local(db_dir)
 
 
-def search_embedding(query_embedding: list, fn: str = 'embeddings.db', k: int = 5) -> list:
-    # Load the index
-    index = faiss.read_index(fn)
+def search_text(text: str, db_dir: str, k: int = 5) -> list:   
+    # Initialize embedding model
+    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
 
-    # Search for similar embeddings
-    _, I = index.search(np.array([query_embedding]), k)
-    return I[0]
+    # Load the FAISS index.
+    vector_store = FAISS.load_local(db_dir, embeddings, allow_dangerous_deserialization=True)
+
+    # Search query.
+    results = vector_store.similarity_search(text, k)
+    return results

@@ -21,6 +21,5 @@ chunks = chunk_docs(docs)
 
 # Embed and save chunks to database.
 print('Embedding and saving chunks...')
-data_dir = 'data'
-db_path = realpath(join(data_dir, 'embeddings.db'))
-save_embeddings(chunks, db_path)
+db_dir = realpath('./pilots/db')
+save_embeddings(chunks, db_dir)
